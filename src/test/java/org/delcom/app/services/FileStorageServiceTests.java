@@ -9,8 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import org.mockito.MockedStatic;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -197,6 +199,40 @@ class FileStorageServiceTests {
 
         assertNotNull(result);
         assertTrue(Files.exists(newDir));
+    }
+
+    @Test
+    void testStoreFileWhenCopyFailsShouldReturnNull() throws IOException {
+        MultipartFile file = new MockMultipartFile("image", "test.jpg", "image/jpeg", "test content".getBytes());
+
+        try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+            filesMock.when(() -> Files.exists(any(Path.class))).thenReturn(true);
+            filesMock.when(() -> Files.copy(any(InputStream.class), any(Path.class), any(StandardCopyOption.class)))
+                    .thenThrow(new IOException("copy failed"));
+
+            String result = fileStorageService.storeFile(file);
+
+            assertNull(result);
+            filesMock.verify(() -> Files.exists(any(Path.class)));
+            filesMock.verify(() -> Files.copy(any(InputStream.class), any(Path.class), any(StandardCopyOption.class)));
+        }
+    }
+
+    @Test
+    void testStoreFileWhenCreateDirectoryFailsShouldReturnNull() throws IOException {
+        MultipartFile file = new MockMultipartFile("image", "test.jpg", "image/jpeg", "test content".getBytes());
+        ReflectionTestUtils.setField(fileStorageService, "uploadDir", tempDir.resolve("nested").toString());
+
+        try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+            filesMock.when(() -> Files.exists(any(Path.class))).thenReturn(false);
+            filesMock.when(() -> Files.createDirectories(any(Path.class))).thenThrow(new IOException("mkdir failed"));
+
+            String result = fileStorageService.storeFile(file);
+
+            assertNull(result);
+            filesMock.verify(() -> Files.exists(any(Path.class)));
+            filesMock.verify(() -> Files.createDirectories(any(Path.class)));
+        }
     }
 }
 

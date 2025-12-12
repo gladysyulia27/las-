@@ -35,12 +35,17 @@ public class FileStorageService {
         String filename = UUID.randomUUID().toString() + extension;
         Path uploadPath = Paths.get(uploadDir);
 
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
+        try {
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
 
-        Path filePath = uploadPath.resolve(filename);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException | RuntimeException e) {
+            // Return null on any storage-related failure so callers can decide next steps
+            return null;
+        }
 
         return "/uploads/" + filename;
     }
@@ -56,7 +61,7 @@ public class FileStorageService {
             if (Files.exists(path)) {
                 Files.delete(path);
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             // Log error but don't throw
         }
     }
