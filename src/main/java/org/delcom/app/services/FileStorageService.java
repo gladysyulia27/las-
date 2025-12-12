@@ -56,8 +56,12 @@ public class FileStorageService {
         }
 
         try {
-            String relativePath = filePath.startsWith("/") ? filePath.substring(1) : filePath;
-            Path path = Paths.get(relativePath);
+            Path path = Paths.get(filePath);
+            // If the value is a leading-slash relative path (e.g. "/uploads/abc"),
+            // treat it as a relative path; keep absolute paths untouched.
+            if (!path.isAbsolute() && filePath.startsWith("/")) {
+                path = Paths.get(filePath.substring(1));
+            }
             if (Files.exists(path)) {
                 Files.delete(path);
             }
