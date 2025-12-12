@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafik Data - Koleksi Obat Herbal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="/">🌿 Koleksi Obat Herbal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/herbal-medicines">Semua Obat</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/herbal-medicines/my-medicines">Obat Saya</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/charts">Grafik</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <h2 class="mb-4">Grafik Data Obat Herbal</h2>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Distribusi Berdasarkan Kategori</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Distribusi Berdasarkan Asal</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="originChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Koleksi Obat Herbal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse JSON data from server
+            let categoryMap = {};
+            let originMap = {};
+            
+            try {
+                const categoryJson = /*[[${categoryJson}]]*/ '{}';
+                const originJson = /*[[${originJson}]]*/ '{}';
+                categoryMap = JSON.parse(categoryJson);
+                originMap = JSON.parse(originJson);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+            }
+            
+            console.log('Category Data:', categoryMap);
+            console.log('Origin Data:', originMap);
+
+            // Generate colors for charts
+            function generateColors(count) {
+                const colors = [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(20, 108, 67, 0.8)',
+                    'rgba(15, 81, 50, 0.8)',
+                    'rgba(10, 54, 34, 0.8)',
+                    'rgba(34, 139, 34, 0.8)',
+                    'rgba(46, 125, 50, 0.8)',
+                    'rgba(56, 142, 60, 0.8)'
+                ];
+                const result = [];
+                for (let i = 0; i < count; i++) {
+                    result.push(colors[i % colors.length]);
+                }
+                return result;
+            }
+
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart');
+            if (categoryCtx) {
+                const categoryLabels = Object.keys(categoryMap);
+                const categoryValues = Object.values(categoryMap);
+                
+                if (categoryLabels.length > 0) {
+                    new Chart(categoryCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: categoryLabels,
+                            datasets: [{
+                                label: 'Jumlah',
+                                data: categoryValues,
+                                backgroundColor: generateColors(categoryLabels.length)
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            label += context.parsed + ' obat';
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    categoryCtx.parentElement.innerHTML = '<p class="text-center text-muted p-4">Belum ada data kategori</p>';
+                }
+            }
+
+            // Origin Chart
+            const originCtx = document.getElementById('originChart');
+            if (originCtx) {
+                const originLabels = Object.keys(originMap);
+                const originValues = Object.values(originMap);
+                
+                if (originLabels.length > 0) {
+                    new Chart(originCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: originLabels,
+                            datasets: [{
+                                label: 'Jumlah',
+                                data: originValues,
+                                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                                borderColor: 'rgba(40, 167, 69, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        callback: function(value) {
+                                            return value + ' obat';
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.parsed.y + ' obat';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    originCtx.parentElement.innerHTML = '<p class="text-center text-muted p-4">Belum ada data asal</p>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

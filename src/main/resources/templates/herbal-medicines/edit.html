@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Obat Herbal - Koleksi Obat Herbal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="/">🌿 Koleksi Obat Herbal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/herbal-medicines">Semua Obat</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/herbal-medicines/my-medicines">Obat Saya</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/charts">Grafik</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <h2 class="mb-4">Edit Obat Herbal</h2>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <form th:action="@{/herbal-medicines/{id}/edit(id=${medicineId})}" th:object="${herbalMedicineForm}" 
+              method="post" enctype="multipart/form-data" class="row g-3">
+            <div class="col-md-12">
+                <label for="name" class="form-label">Nama Obat Herbal *</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></div>
+            </div>
+            <div class="col-md-12">
+                <label for="description" class="form-label">Deskripsi *</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="5" required></textarea>
+                <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></div>
+            </div>
+            <div class="col-md-6">
+                <label for="category" class="form-label">Kategori *</label>
+                <input type="text" class="form-control" id="category" th:field="*{category}" required>
+                <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}" class="text-danger"></div>
+            </div>
+            <div class="col-md-6">
+                <label for="origin" class="form-label">Asal *</label>
+                <input type="text" class="form-control" id="origin" th:field="*{origin}" required>
+                <div th:if="${#fields.hasErrors('origin')}" th:errors="*{origin}" class="text-danger"></div>
+            </div>
+            <div class="col-md-12">
+                <label for="benefits" class="form-label">Manfaat *</label>
+                <textarea class="form-control" id="benefits" th:field="*{benefits}" rows="4" required></textarea>
+                <div th:if="${#fields.hasErrors('benefits')}" th:errors="*{benefits}" class="text-danger"></div>
+            </div>
+            <div class="col-md-12">
+                <label for="image" class="form-label">Gambar Baru (opsional)</label>
+                <input type="file" class="form-control" id="image" th:field="*{image}" accept="image/*">
+                <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar</small>
+                <div th:if="${currentImage != null}" class="mt-2">
+                    <p class="mb-1">Gambar saat ini:</p>
+                    <img th:src="@{${currentImage}}" class="img-thumbnail" style="max-width: 200px;" alt="Gambar saat ini">
+                </div>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-success">Update</button>
+                <a href="/herbal-medicines/my-medicines" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Koleksi Obat Herbal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
